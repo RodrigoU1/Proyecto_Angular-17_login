@@ -10,6 +10,7 @@ import { LoginRequest } from '../../services/auth/loginRequest';
   styleUrl: './login.component.css'
 })
 export class LoginComponent {
+  loginError:string="";
   loginForm=this.formBuilder.group({
     email:['roy@gmail.com',[Validators.required,Validators.email]],
     password: ['',Validators.required],
@@ -33,13 +34,14 @@ export class LoginComponent {
         },
         error: (errorData) => {
           console.log(errorData);
+          this.loginError=errorData;
         },
         complete: () => {
           console.info("Login completado");
+          this.router.navigateByUrl('/inicio')
+          this.loginForm.reset()
         }
       })
-      this.router.navigateByUrl('/inicio')
-      this.loginForm.reset()
     }else{
       this.loginForm.markAllAsTouched();
       alert("Error al ingresar los datos");
