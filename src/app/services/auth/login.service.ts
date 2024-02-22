@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { LoginRequest } from './loginRequest';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, catchError, throwError } from 'rxjs';
+import { Observable, catchError, throwError, BehaviorSubject, tap } from 'rxjs';
 import { User } from './user';
 
 @Injectable({
@@ -9,13 +9,21 @@ import { User } from './user';
 })
 
 export class LoginService {
+ 
+  currentUserLoginOn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+
+  currentUserData: BehaviorSubject<User> = new BehaviorSubject<User>({id:0, email:''});
 
   constructor(private http: HttpClient) { }
 
   login(credentials:LoginRequest):Observable<User> {
     return this.http.get<User>('././assets/data.json').pipe(
-      catchError(this.handleError)
-    )
+     tap( (userData: User) =>{
+      this.currentUserData.next(userData);
+      this.currentUserLoginOn.next(true);
+    }),
+     catchError(this.handleError)
+    );
   }
 
   // ↓ Manejador de errores
@@ -28,5 +36,10 @@ export class LoginService {
     }
     return throwError(()=> new Error('Algo falló, Por favor intente nuevamente.'));
   }
+
+  get userData():Observable<User>{
+    return this.currentUserData.asObservable();
+  }
+
 
 }
